@@ -7,6 +7,7 @@ import { createApp, h } from 'vue';
 
 import { initializeTheme } from './composables/useAppearance';
 import AnnouncementsList from './components/app/AnnouncementsList.vue';
+import AnnouncementForm from './components/app/AnnouncementForm.vue';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -21,6 +22,7 @@ createInertiaApp({
         createApp({ render: () => h(App, props) })
             .use(plugin)
             .component('announcements-list', AnnouncementsList)
+            .component('announcement-form', AnnouncementForm)
             .mount(el);
     },
     progress: {

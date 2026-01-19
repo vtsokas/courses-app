@@ -30,22 +30,24 @@
       </li>
     </ul>
 
-    <p v-else-if="loading" class="text-gray-500">Loading announcements...</p>
+    <div v-else-if="loading" class="scroll-container space-y-6 max-h-96 overflow-y-auto pr-2">
+      <div v-for="i in 3" :key="i" class="bg-white shadow-lg rounded-xl p-5 animate-pulse">
+        <div class="flex items-center justify-between mb-2">
+          <div class="h-6 bg-gray-300 rounded w-48"></div>
+          <div class="h-4 bg-gray-300 rounded w-24"></div>
+        </div>
+        <div class="h-4 bg-gray-300 rounded w-full mb-3"></div>
+        <div class="h-4 bg-gray-300 rounded w-5/6 mb-4"></div>
+        <div class="flex flex-wrap gap-2">
+          <div class="h-6 bg-gray-300 rounded-full w-16"></div>
+          <div class="h-6 bg-gray-300 rounded-full w-16"></div>
+        </div>
+      </div>
+    </div>
+
     <p v-else class="text-gray-500">No announcements found.</p>
   </div>
 </template>
-
-<style>
-    .scroll-container {
-        max-height: 72%;
-        overflow: scroll;
-        position: absolute;
-        min-width: 93%;
-    }
-    .scroll-container::-webkit-scrollbar {
-            display: none; /* For Chrome, Safari, and Edge */
-        }
-</style>
 
 <script>
 import announcements from "@/routes/announcements";
@@ -77,7 +79,7 @@ export default {
             },
         })
         .then(response => {
-          this.announcements = response.data.map(r => ({ ...r, tags: ["System"] }));
+          this.announcements = response.data.map(r => ({ ...r, tags: r.tags.split(', ') || [] }));
         })
         .catch(error => {
           console.error("Error fetching announcements:", error);

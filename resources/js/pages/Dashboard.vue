@@ -33,7 +33,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <div
                     class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
                 >
-                    <PlaceholderPattern />
+                    
+                    <announcement-form></announcement-form>
+                    <!-- <PlaceholderPattern /> -->
                 </div>
                 <div
                     class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
@@ -53,5 +55,15 @@ const breadcrumbs: BreadcrumbItem[] = [
 <style>
     .widget-container {
         background: #e7e7e7;
+    }
+    
+    .scroll-container {
+        max-height: 72%;
+        overflow: scroll;
+        position: absolute;
+        min-width: 93%;
+    }
+    .scroll-container::-webkit-scrollbar {
+        display: none; /* For Chrome, Safari, and Edge */
     }
 </style>>
