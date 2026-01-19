@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
+import axios from 'axios';
 
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
@@ -18,6 +19,29 @@ defineProps<{
     canResetPassword: boolean;
     canRegister: boolean;
 }>();
+
+var email = "";
+const emailChanged = (value: string | number) => {
+    email = String(value);
+};
+
+var password = "";
+const passwordChanged = (value: string | number) => {
+    password = String(value);
+}
+
+const onLoginSuccess = async () => {
+  const response = await axios.post('/oauth/token', {
+    grant_type: 'password',
+    client_id: import.meta.env.VITE_PASSPORT_CLIENT_ID,
+    client_secret: import.meta.env.VITE_PASSPORT_CLIENT_SECRET,
+    username: email,
+    password: password,
+    scope: '',
+  });
+
+  localStorage.setItem('access_token', response.data.access_token);
+};
 </script>
 
 <template>
@@ -38,6 +62,7 @@ defineProps<{
             v-bind="store.form()"
             :reset-on-success="['password']"
             v-slot="{ errors, processing }"
+            @success="onLoginSuccess"
             class="flex flex-col gap-6"
         >
             <div class="grid gap-6">
@@ -47,6 +72,7 @@ defineProps<{
                         id="email"
                         type="email"
                         name="email"
+                        @update:modelValue="emailChanged"
                         required
                         autofocus
                         :tabindex="1"
@@ -72,6 +98,8 @@ defineProps<{
                         id="password"
                         type="password"
                         name="password"
+                        @update:modelValue="passwordChanged"
+                        model-value="store.form().password"
                         required
                         :tabindex="2"
                         autocomplete="current-password"
