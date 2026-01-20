@@ -1,8 +1,8 @@
 <template>
-  <div class="max-w-2xl mx-auto p-6">
-    <h2 class="text-3xl font-bold mb-6 text-gray-800">
+  <div>
+    <!-- <h2 class="text-3xl font-bold mb-6 text-gray-800">
       {{ isEditing ? 'Edit Announcement' : 'Add Announcement' }}
-    </h2>
+    </h2> -->
 
     <form @submit.prevent="submitForm" class="space-y-6 scroll-container">
       <div>
@@ -109,6 +109,7 @@ export default {
       },
       loading: false,
       error: null,
+      showModal: false,
     };
   },
   computed: {
@@ -138,16 +139,25 @@ export default {
 
         const method = this.isEditing ? 'patch' : 'post';
 
-        await axios[method](url, this.form);
+        await axios[method](url, this.form, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+            Accept: 'application/json',
+          }
+      });
 
         this.$emit('submitted');
-        this.resetForm();
+        this.closeModal();
       } catch (err) {
         this.error = err.response?.data?.message || 'An error occurred';
         console.error('Error submitting form:', err);
       } finally {
         this.loading = false;
       }
+    },
+    closeModal() {
+      this.showModal = false;
+      this.resetForm();
     },
     resetForm() {
       this.form = {
@@ -161,3 +171,9 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.scroll-container {
+ min-width: 32%;
+}
+</style>

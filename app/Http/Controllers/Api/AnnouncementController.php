@@ -24,7 +24,9 @@ class AnnouncementController extends Controller
         return Announcement::create(
             $request->validate([
                 'title' => 'required',
-                'body' => 'required'
+                'body' => 'required',
+                'date' => 'required|date',
+                'tags' => 'nullable|string'
             ])
         );
     }
