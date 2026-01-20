@@ -23,47 +23,39 @@ const breadcrumbs: BreadcrumbItem[] = [
         <div
             class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
         >
-            <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-                <div
-                    class="widget-container relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-                >
-                    <announcements-list></announcements-list>
-                    <!-- <PlaceholderPattern /> -->
-                </div>
-                <div
-                    class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-                >
-                    
-                    <announcement-form></announcement-form>
-                    <!-- <PlaceholderPattern /> -->
-                </div>
-                <div
-                    class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-                >
-                    <PlaceholderPattern />
-                </div>
+        <div class="grid grid-flow-col gap-4 grid-rows-3 grid-cols-3 h-full">
+            <div class="row-span-3 col-span-1 widget-container relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                <announcements-list></announcements-list>
             </div>
-            <div
-                class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border"
-            >
+            <div class="row-span-1 col-span-2 widget-container relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                <PlaceholderPattern />
+            </div>
+            <div class="col-span-2 row-span-2 widget-container relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
                 <PlaceholderPattern />
             </div>
         </div>
+        </div>
+
     </AppLayout>
 </template>
 
 <style>
     .widget-container {
         background: #e7e7e7;
+        height: 100%;
+        width: 100%;
     }
     
     .scroll-container {
-        max-height: 72%;
+        max-height: 88%;/*72%;*/
         overflow: scroll;
         position: absolute;
         min-width: 93%;
     }
     .scroll-container::-webkit-scrollbar {
         display: none; /* For Chrome, Safari, and Edge */
+    }
+    .grid {
+        height: 88vh;
     }
 </style>>

@@ -69,7 +69,7 @@
         </button>
         <button
           type="button"
-          @click="resetForm"
+          @click="closeModal"
           class="px-6 py-2 bg-gray-300 text-gray-800 font-medium rounded-lg hover:bg-gray-400"
         >
           Cancel
@@ -122,8 +122,8 @@ export default {
       this.form = {
         title: this.announcement.title,
         body: this.announcement.body,
-        date: this.announcement.date,
-        tags: this.announcement.tags,
+        date: new Date(this.announcement.date).toISOString().slice(0,16),
+        tags: this.announcement.tags.join(', '),
       };
     }
   },
@@ -140,14 +140,13 @@ export default {
         const method = this.isEditing ? 'patch' : 'post';
 
         await axios[method](url, this.form, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-            Accept: 'application/json',
-          }
-      });
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                Accept: 'application/json',
+            }
+        });
 
         this.$emit('submitted');
-        this.closeModal();
       } catch (err) {
         this.error = err.response?.data?.message || 'An error occurred';
         console.error('Error submitting form:', err);
@@ -156,8 +155,7 @@ export default {
       }
     },
     closeModal() {
-      this.showModal = false;
-      this.resetForm();
+        this.$emit('cancelled');
     },
     resetForm() {
       this.form = {
@@ -175,5 +173,6 @@ export default {
 <style scoped>
 .scroll-container {
  min-width: 32%;
+ padding:4px;
 }
 </style>

@@ -1,29 +1,39 @@
 <template>
   <div class="max-w-3xl mx-auto p-6">
-    <h2 class="text-3xl font-bold mb-6 text-gray-800">Announcements 
-        <button
-            @click="showModal = true"
-            class="px-6 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600">
-            Add Announcement
-        </button></h2>
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-3xl font-bold text-gray-800">Announcements</h2>
+      <button
+        @click="showModal = true"
+        class="p-1.5 text-gray-600 hover:text-blue-500 hover:bg-blue-50 rounded-md transition-colors"
+        title="Add Announcement">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+      </button>
+    </div>
 
     <transition name="modal">
       <div v-if="showModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div class="modal-container bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+        <div class="modal-container rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
           <!-- Modal Header -->
           <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-white flex-shrink-0">
             <h2 class="text-2xl font-bold text-gray-900">
-              Create New Announcement
+              {{ editingId ? 'Edit Announcement' : 'Create New Announcement' }}
             </h2>
-            <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 text-3xl font-light transition-colors">
+            <button @click="closeFormModal" class="text-gray-400 hover:text-gray-600 text-3xl font-light transition-colors">
               ×
             </button>
           </div>
 
           <!-- Modal Body with Form - Scrollable -->
-          <div class="overflow-y-auto flex-1">
+          <div class="overflow-y-auto flex-1 bg-gray-100">
             <div class="p-6">
-              <announcement-form @submitted="onAnnouncementSubmitted"></announcement-form>
+              <announcement-form 
+                :announcementId="editingId"
+                :announcement="editingAnnouncement"
+                @submitted="onAnnouncementSubmitted"
+                @cancelled="closeFormModal">
+              </announcement-form>
             </div>
           </div>
         </div>
@@ -46,20 +56,46 @@
           <span class="text-sm text-gray-500">{{ formatDate(announcement.date) }}</span>
         </div>
         <p class="text-gray-700 mb-3">{{ announcement.body }}</p>
-        <div class="flex flex-wrap gap-2">
-          <span
-            v-for="tag in announcement.tags"
-            :key="tag"
-            class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full"
-          >
-            {{ tag }}
-          </span>
+        
+        <!-- Tags and Action Buttons on same line -->
+        <div class="flex flex-wrap gap-2 items-center justify-between">
+          <div class="flex flex-wrap gap-2">
+            <span
+              v-for="tag in announcement.tags"
+              :key="tag"
+              class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full"
+            >
+              {{ tag }}
+            </span>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="flex gap-1">
+            <button
+              @click="editAnnouncement(announcement)"
+              class="p-1.5 text-gray-600 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
+              title="Edit"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+            <button
+              @click="deleteAnnouncement(announcement.id)"
+              class="p-1.5 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+              title="Delete"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
         </div>
       </li>
     </ul>
 
     <div v-else-if="loading" class="scroll-container space-y-6 max-h-96 overflow-y-auto pr-2">
-      <div v-for="i in 3" :key="i" class="bg-white shadow-lg rounded-xl p-5 animate-pulse">
+      <div v-for="i in 5" :key="i" class="bg-white shadow-lg rounded-xl p-5 animate-pulse">
         <div class="flex items-center justify-between mb-2">
           <div class="h-6 bg-gray-300 rounded w-48"></div>
           <div class="h-4 bg-gray-300 rounded w-24"></div>
@@ -93,6 +129,8 @@ export default {
       loading: false,
       lastScrollTop: 0,
       showModal: false,
+      editingId: null,
+      editingAnnouncement: null,
     };
   },
 
@@ -112,7 +150,7 @@ export default {
             },
         })
         .then(response => {
-          this.announcements = response.data.map(r => ({ ...r, tags: r.tags.split(', ') || [] }));
+          this.announcements = response.data.map(r => ({ ...r, tags: r.tags?.split(', ') || [] }));
         })
         .catch(error => {
           console.error("Error fetching announcements:", error);
@@ -125,9 +163,36 @@ export default {
       const options = { year: "numeric", month: "short", day: "numeric" };
       return new Date(date).toLocaleDateString(undefined, options);
     },
+    editAnnouncement(announcement) {
+      this.editingId = announcement.id;
+      this.editingAnnouncement = announcement;
+      this.showModal = true;
+    },
+    deleteAnnouncement(id) {
+      if (confirm('Are you sure you want to delete this announcement?')) {
+        axios
+          .delete(`/api/announcements/${id}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+              Accept: 'application/json',
+            },
+          })
+          .then(() => {
+            this.fetchAnnouncements();
+          })
+          .catch(error => {
+            console.error("Error deleting announcement:", error);
+          });
+      }
+    },
     onAnnouncementSubmitted() {
-      this.showModal = false;
+      this.closeFormModal();
       this.fetchAnnouncements();
+    },
+    closeFormModal() {
+      this.showModal = false;
+      this.editingId = null;
+      this.editingAnnouncement = null;
     }
   },
 };
