@@ -2,14 +2,34 @@
   <div class="max-w-3xl mx-auto p-6">
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-3xl font-bold text-gray-800">Announcements</h2>
-      <button
-        @click="showModal = true"
-        class="p-1.5 text-gray-600 hover:text-blue-500 hover:bg-blue-50 rounded-md transition-colors"
-        title="Add Announcement">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-      </button>
+      <div class="flex items-center gap-1">
+        <button
+          @click="toggleFilterInput"
+          class="p-1.5 text-gray-600 hover:text-blue-500 hover:bg-blue-50 rounded-md transition-colors"
+          title="Filter">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+        </button>
+        <transition name="slide-fade">
+          <input
+            v-if="showFilterInput"
+            v-model="filterText"
+            @input="onFilterChange"
+            type="text"
+            class="px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+            ref="filterInput"
+          />
+        </transition>
+        <button
+          @click="showModal = true"
+          class="p-1.5 text-gray-600 hover:text-blue-500 hover:bg-blue-50 rounded-md transition-colors"
+          title="Add Announcement">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      </div>
     </div>
 
     <transition name="modal">
@@ -40,7 +60,7 @@
       </div>
     </transition>
 
-    <ul v-if="announcements.length" class="space-y-6 max-h-96 pr-2 scroll-container overflow-y-auto">
+    <ul v-if="announcements.length" class="space-y-6 max-h-96 pr-4 scroll-container overflow-y-auto">
       <li
         v-for="announcement in announcements"
         :key="announcement.id"
@@ -125,12 +145,15 @@ export default {
   },
   data() {
     return {
+      allAnnouncements: [],
       announcements: [],
       loading: false,
       lastScrollTop: 0,
       showModal: false,
       editingId: null,
       editingAnnouncement: null,
+      filterText: '',
+      showFilterInput: false,
     };
   },
 
@@ -150,7 +173,9 @@ export default {
             },
         })
         .then(response => {
-          this.announcements = response.data.map(r => ({ ...r, tags: r.tags?.split(', ') || [] }));
+          this.allAnnouncements = this.announcements = response.data
+            .map(r => ({ ...r, tags: r.tags?.split(', ') || [] }))
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
         })
         .catch(error => {
           console.error("Error fetching announcements:", error);
@@ -193,7 +218,26 @@ export default {
       this.showModal = false;
       this.editingId = null;
       this.editingAnnouncement = null;
-    }
+    },
+    onFilterChange(e) {
+      var value = e.target.value;
+      this.announcements = this.allAnnouncements.filter(announcement =>
+        announcement.title.toLowerCase().includes(value.toLowerCase()) ||
+        announcement.body.toLowerCase().includes(value.toLowerCase()) ||
+        (announcement.tags && announcement.tags.some(tag => tag.toLowerCase().includes(value.toLowerCase())))
+      );
+    },
+    toggleFilterInput() {
+      this.showFilterInput = !this.showFilterInput;
+      if (this.showFilterInput) {
+        this.$nextTick(() => {
+          this.$refs.filterInput?.focus();
+        });
+      } else {
+        this.filterText = '';
+        this.onFilterChange({ target: { value: '' } });
+      }
+    },
   },
 };
 </script>
@@ -216,6 +260,21 @@ export default {
 
 .fade-enter-from,
 .fade-leave-to {
+  opacity: 0;
+}
+
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-enter-from {
+  transform: translateX(-10px);
+  opacity: 0;
+}
+
+.slide-fade-leave-to {
+  transform: translateX(-10px);
   opacity: 0;
 }
 

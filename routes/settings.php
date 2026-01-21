@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AnnouncementController;
+use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
@@ -9,6 +10,7 @@ use Inertia\Inertia;
 
 Route::middleware('auth:api')->group(function () {
     Route::apiResource('api/announcements', AnnouncementController::class);
+    Route::apiResource('api/courses', CourseController::class);
 });
 
 Route::middleware(['auth'])->group(function () {
